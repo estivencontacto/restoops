@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">RestoOps logo</title>
+  <desc id="desc">Minimal monogram logo for RestoOps restaurant operations software.</desc>
+  <rect width="220" height="220" rx="48" fill="#102017"/>
+  <circle cx="110" cy="110" r="70" fill="none" stroke="#D8C18A" stroke-width="10"/>
+  <path d="M72 136V78h40c19 0 31 10 31 27 0 13-7 22-19 26l24 35h-25l-21-32h-10v32H72Zm20-49v30h18c8 0 13-6 13-15 0-8-5-15-13-15H92Z" fill="#F7F4EA"/>
+  <path d="M145 76c15 0 27 12 27 27v10c0 15-12 27-27 27s-27-12-27-27v-10c0-15 12-27 27-27Zm0 18c-5 0-9 4-9 9v10c0 5 4 9 9 9s9-4 9-9v-10c0-5-4-9-9-9Z" fill="#9FB6A4"/>
+</svg>

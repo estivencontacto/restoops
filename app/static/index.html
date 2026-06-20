@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RestoOps</title>
+    <link rel="stylesheet" href="/static/styles.css?v=restoops-layout-3">
+  </head>
+  <body>
+    <section class="login-screen" id="loginScreen">
+      <a class="support-link" href="https://wa.link/xqk7gk" target="_blank" rel="noreferrer" aria-label="Soporte tecnico por WhatsApp">
+        <span>?</span>
+        Soporte tecnico
+      </a>
+
+      <div class="login-card">
+        <div class="login-brand">
+          <img src="/static/restoops-logo.svg" alt="RestoOps logo">
+          <div>
+            <span>Restaurant OS</span>
+            <strong>RestoOps</strong>
+          </div>
+        </div>
+
+        <div class="login-copy">
+          <p class="eyebrow">Acceso seguro</p>
+          <h1>Gestiona reservas, POS y operacion desde un solo lugar.</h1>
+          <p>Ingresa con tu perfil para acceder al panel segun tu rol.</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+          <label>Email
+            <input name="email" type="email" value="admin@restoops.co" autocomplete="username" required>
+          </label>
+          <label>Password
+            <span class="password-wrap">
+              <input id="loginPassword" name="password" type="password" value="RestoOps2026" autocomplete="current-password" required>
+              <button class="eye-button" id="togglePassword" type="button" aria-label="Mostrar contraseña">
+                <span class="eye-shape"><span class="eye-pupil"></span></span>
+              </button>
+            </span>
+          </label>
+          <button type="submit">Entrar a RestoOps</button>
+        </form>
+
+        <div class="login-meta">
+          <span>Admin inicial: admin@restoops.co</span>
+          <span>Desarrollado por Estiven Agudelo · estivencontacto@gmail.com · CO</span>
+          <span>Licencia de uso educativo y demostrativo. Todos los derechos reservados.</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-shell" id="appShell" hidden>
+      <aside class="sidebar">
+        <div class="brand">
+          <img class="brand-logo" src="/static/restoops-logo.svg" alt="RestoOps logo">
+          <div>
+            <strong>RestoOps</strong>
+            <span>Restaurant OS</span>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Principal">
+          <button class="nav-item active" data-view="dashboard">Dashboard</button>
+          <button class="nav-item" data-view="pos">POS</button>
+          <button class="nav-item" data-view="reservations">Reservas</button>
+          <button class="nav-item" data-view="tables">Mesas</button>
+          <button class="nav-item" data-view="customers">Clientes</button>
+          <button class="nav-item" data-view="menu">Menu</button>
+          <button class="nav-item" data-view="orders">Pedidos</button>
+          <button class="nav-item" data-view="payments">Pagos</button>
+          <button class="nav-item" data-view="users" data-role="admin">Usuarios</button>
+          <button class="nav-item" data-view="restaurants">Restaurantes</button>
+          <button class="nav-item" data-view="reports">Reportes</button>
+          <button class="nav-item" data-view="notifications">Notificaciones</button>
+        </nav>
+
+        <div class="sidebar-card">
+          <span>Sesion</span>
+          <strong id="sessionLabel">Modo demo</strong>
+          <button class="ghost-button" id="logoutButton" type="button">Cerrar sesion</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Gestion integral</p>
+            <h1 id="viewTitle">Dashboard</h1>
+          </div>
+          <div class="topbar-actions">
+            <span class="status-pill" id="apiStatus">Verificando API</span>
+            <button class="secondary-button" id="refreshButton" type="button">Actualizar</button>
+          </div>
+        </header>
+
+        <section class="hero-panel" aria-label="Resumen visual">
+          <img class="hero-logo" src="/static/restoops-logo.svg" alt="">
+          <div class="hero-copy">
+            <span>Reservas, mesas, pedidos y ventas</span>
+            <strong>RestoOps organiza la operacion completa de un restaurante moderno.</strong>
+          </div>
+        </section>
+        <section id="toast" class="toast" hidden></section>
+        <section id="viewContainer" class="view-container"></section>
+      </main>
+    </div>
+
+    <script src="/static/app.js?v=restoops-layout-3"></script>
+  </body>
+</html>
