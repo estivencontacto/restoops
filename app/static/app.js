@@ -1,5 +1,18 @@
 const API_BASE = "";
 const TAX_RATE = 0.1;
+const API_ERROR_MESSAGES = {
+  "Reservation does not match order table": "La reserva seleccionada pertenece a otra mesa. Cambia la mesa o deja la reserva en 'Sin asociar'.",
+  "Restaurant not found": "No se encontro el restaurante.",
+  "Table not found": "No se encontro la mesa.",
+  "Table does not belong to restaurant": "La mesa no pertenece al restaurante seleccionado.",
+  "Reservation not found": "No se encontro la reserva.",
+  "Customer not found": "No se encontro el cliente.",
+  "Menu item not found": "No se encontro el producto del menu.",
+  "Menu item does not belong to restaurant": "El producto no pertenece al restaurante seleccionado.",
+  "Menu item is not available": "El producto no esta disponible.",
+  "Order not found": "No se encontro el pedido.",
+  "Payment amount must match order total": "El pago debe coincidir con el total del pedido."
+};
 
 const state = {
   token: localStorage.getItem("restoops_token") || "",
@@ -253,11 +266,15 @@ async function request(endpoint, options = {}) {
 async function readError(response) {
   try {
     const payload = await response.json();
-    if (Array.isArray(payload.detail)) return payload.detail.map((item) => item.msg).join(", ");
-    return payload.detail || "Error de API";
+    if (Array.isArray(payload.detail)) return payload.detail.map((item) => translateApiError(item.msg)).join(", ");
+    return translateApiError(payload.detail) || "Error de API";
   } catch (_) {
     return "Error de API";
   }
+}
+
+function translateApiError(message) {
+  return API_ERROR_MESSAGES[message] || message;
 }
 
 function render() {
@@ -627,7 +644,7 @@ function renderOrders() {
       ${select("restaurant_id", "Restaurante", state.data.restaurants, "name")}
       ${select("table_id", "Mesa", state.data.tables, "table_number")}
       ${select("customer_id", "Cliente", state.data.customers, "full_name", true)}
-      ${select("reservation_id", "Reserva", state.data.reservations, "id", true)}
+      ${selectReservations("reservation_id", "Reserva", state.data.reservations)}
       ${select("menu_item_id", "Producto", state.data.menu, "name")}
       ${input("quantity", "Cantidad", "1", "number")}
     `,
@@ -831,11 +848,18 @@ async function resetUserPassword(userId) {
 }
 
 async function saveOrder(payload) {
+  const tableId = Number(payload.table_id);
+  const reservation = payload.reservation_id
+    ? state.data.reservations.find((item) => item.id === Number(payload.reservation_id))
+    : null;
+  if (reservation && reservation.table_id !== tableId) {
+    throw new Error("La reserva seleccionada pertenece a otra mesa. Cambia la mesa o deja la reserva en 'Sin asociar'.");
+  }
   const itemPayload = {
     restaurant_id: Number(payload.restaurant_id),
-    table_id: Number(payload.table_id),
-    customer_id: payload.customer_id ? Number(payload.customer_id) : null,
-    reservation_id: payload.reservation_id ? Number(payload.reservation_id) : null,
+    table_id: tableId,
+    customer_id: payload.customer_id ? Number(payload.customer_id) : reservation?.customer_id || null,
+    reservation_id: reservation ? reservation.id : null,
     items: [{ menu_item_id: Number(payload.menu_item_id), quantity: Number(payload.quantity) }]
   };
   if (state.apiOnline && state.token) {
@@ -1215,6 +1239,19 @@ function select(name, label, options, textKey, optional = false) {
       <select name="${name}" ${optional ? "" : "required"}>
         ${empty}
         ${options.map((item) => `<option value="${item.id}">${textKey === "id" ? `#${item.id}` : item[textKey]}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function selectReservations(name, label, options) {
+  return `
+    <label>${label}
+      <select name="${name}">
+        <option value="">Sin asociar</option>
+        ${options.map((item) => `
+          <option value="${item.id}">#${item.id} - ${customerName(item.customer_id)} / ${tableName(item.table_id)} / ${item.reservation_date}</option>
+        `).join("")}
       </select>
     </label>
   `;
