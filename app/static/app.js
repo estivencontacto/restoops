@@ -1,5 +1,45 @@
 const API_BASE = "";
 const TAX_RATE = 0.1;
+const POS_TABLE_LAYOUT = {
+  A1: { x: 18, y: 28, shape: "round" },
+  A2: { x: 34, y: 28, shape: "round" },
+  A3: { x: 50, y: 28, shape: "round" },
+  B1: { x: 18, y: 54, shape: "square" },
+  B2: { x: 36, y: 56, shape: "square" },
+  B4: { x: 58, y: 55, shape: "square wide" },
+  C1: { x: 76, y: 30, shape: "square wide" },
+  C2: { x: 76, y: 56, shape: "square wide" },
+  VIP1: { x: 60, y: 78, shape: "vip" },
+  BAR1: { x: 15, y: 79, shape: "bar-seat" }
+};
+const ITALIAN_MENU_ITEMS = [
+  { name: "Bruschetta al pomodoro", description: "Pan rustico, tomate, ajo, albahaca y aceite de oliva", category: "appetizer", price: "18000.00" },
+  { name: "Burrata pugliese", description: "Burrata fresca, pesto, tomates confitados y focaccia", category: "appetizer", price: "34000.00" },
+  { name: "Carpaccio di manzo", description: "Res laminada, rucula, parmesano y limon siciliano", category: "appetizer", price: "39000.00" },
+  { name: "Arancini siciliani", description: "Croquetas de risotto con mozzarella y pomodoro", category: "appetizer", price: "26000.00" },
+  { name: "Tagliatelle alla bolognese", description: "Pasta fresca con ragu lento de res y cerdo", category: "main_course", price: "46000.00" },
+  { name: "Spaghetti carbonara", description: "Guanciale, pecorino romano, yema y pimienta negra", category: "main_course", price: "44000.00" },
+  { name: "Lasagna della casa", description: "Capas de pasta, ragu, bechamel y parmesano gratinado", category: "main_course", price: "48000.00" },
+  { name: "Risotto ai funghi", description: "Arborio, portobello, parmesano y aceite de trufa", category: "main_course", price: "52000.00" },
+  { name: "Gnocchi al pesto", description: "Gnocchi de papa, pesto genoves y pinoli", category: "main_course", price: "42000.00" },
+  { name: "Pizza margherita napolitana", description: "Pomodoro, mozzarella fior di latte y albahaca", category: "main_course", price: "39000.00" },
+  { name: "Osso buco alla milanese", description: "Ternera braseada, gremolata y risotto azafranado", category: "main_course", price: "72000.00" },
+  { name: "Pollo alla parmigiana", description: "Pechuga apanada, pomodoro, mozzarella y spaghetti", category: "main_course", price: "54000.00" },
+  { name: "Tiramisu classico", description: "Mascarpone, espresso, savoiardi y cacao", category: "dessert", price: "22000.00" },
+  { name: "Panna cotta frutos rojos", description: "Crema cocida de vainilla con coulis artesanal", category: "dessert", price: "20000.00" },
+  { name: "Cannoli siciliani", description: "Canutillos crujientes con ricotta dulce y pistacho", category: "dessert", price: "24000.00" },
+  { name: "Gelato artigianale", description: "Tres sabores: pistacho, vainilla y chocolate", category: "dessert", price: "18000.00" },
+  { name: "Limonata italiana", description: "Limon siciliano, soda y hierbabuena", category: "beverage", price: "12000.00" },
+  { name: "San Pellegrino", description: "Agua mineral gasificada italiana", category: "beverage", price: "11000.00" },
+  { name: "Coca-Cola", description: "Gaseosa fria 350 ml", category: "beverage", price: "8000.00" },
+  { name: "Peroni Nastro Azzurro", description: "Cerveza lager italiana", category: "beverage", price: "16000.00" },
+  { name: "Moretti", description: "Cerveza italiana suave y maltosa", category: "beverage", price: "15000.00" },
+  { name: "Chianti Classico", description: "Copa de vino tinto toscano", category: "beverage", price: "28000.00" },
+  { name: "Pinot Grigio", description: "Copa de vino blanco fresco", category: "beverage", price: "26000.00" },
+  { name: "Sangria rosso", description: "Vino tinto, frutas, naranja y especias", category: "beverage", price: "24000.00" },
+  { name: "Aperol Spritz", description: "Aperol, prosecco, soda y naranja", category: "beverage", price: "30000.00" },
+  { name: "Negroni", description: "Gin, Campari y vermut rosso", category: "beverage", price: "32000.00" }
+];
 const API_ERROR_MESSAGES = {
   "Reservation does not match order table": "La reserva seleccionada pertenece a otra mesa. Cambia la mesa o deja la reserva en 'Sin asociar'.",
   "Restaurant not found": "No se encontro el restaurante.",
@@ -91,20 +131,14 @@ const demo = {
     { id: 4, customer_id: 4, restaurant_id: 1, table_id: 4, reservation_date: today(2), start_time: "18:30:00", end_time: "20:00:00", party_size: 2, status: "pending", notes: "Sin gluten", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: 5, customer_id: 5, restaurant_id: 1, table_id: 8, reservation_date: today(3), start_time: "19:30:00", end_time: "21:00:00", party_size: 5, status: "confirmed", notes: "Celebracion familiar", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ],
-  menu: [
-    { id: 1, restaurant_id: 1, name: "Tartar de atun", description: "Aguacate, sesamo y citricos", category: "appetizer", price: "28000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 2, restaurant_id: 1, name: "Risotto de hongos", description: "Parmesano y aceite de trufa", category: "main_course", price: "42000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 3, restaurant_id: 1, name: "Cheesecake vasco", description: "Frutos rojos", category: "dessert", price: "19000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 4, restaurant_id: 1, name: "Croquetas de jamon serrano", description: "Alioli suave y paprika", category: "appetizer", price: "24000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 5, restaurant_id: 1, name: "Burrata con tomates asados", description: "Pesto de albahaca y pan rustico", category: "appetizer", price: "31000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 6, restaurant_id: 1, name: "Short rib braseado", description: "Pure de papa criolla y reduccion de vino", category: "main_course", price: "62000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 7, restaurant_id: 1, name: "Salmon a la parrilla", description: "Vegetales verdes y salsa de limon", category: "main_course", price: "54000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 8, restaurant_id: 1, name: "Pasta fresca al pesto", description: "Pinenuts, parmesano y aceite de oliva", category: "main_course", price: "39000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 9, restaurant_id: 1, name: "Tiramisu clasico", description: "Cafe espresso y cacao amargo", category: "dessert", price: "21000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 10, restaurant_id: 1, name: "Creme brulee de vainilla", description: "Costra caramelizada", category: "dessert", price: "22000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 11, restaurant_id: 1, name: "Limonada de hierbabuena", description: "Natural y refrescante", category: "beverage", price: "12000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: 12, restaurant_id: 1, name: "Negroni de la casa", description: "Gin, vermut rojo y bitter", category: "beverage", price: "32000.00", is_available: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
-  ],
+  menu: ITALIAN_MENU_ITEMS.map((item, index) => ({
+    id: index + 1,
+    restaurant_id: 1,
+    ...item,
+    is_available: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  })),
   orders: [
     { id: 1, restaurant_id: 1, table_id: 7, reservation_id: null, customer_id: 3, status: "preparing", subtotal: "96000.00", tax: "9600.00", total: "105600.00", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), items: [{ id: 1, order_id: 1, menu_item_id: 2, quantity: 1, unit_price: "42000.00", total_price: "42000.00" }, { id: 2, order_id: 1, menu_item_id: 7, quantity: 1, unit_price: "54000.00", total_price: "54000.00" }] },
     { id: 2, restaurant_id: 1, table_id: 3, reservation_id: 1, customer_id: 1, status: "served", subtotal: "103000.00", tax: "10300.00", total: "113300.00", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), items: [{ id: 3, order_id: 2, menu_item_id: 4, quantity: 1, unit_price: "24000.00", total_price: "24000.00" }, { id: 4, order_id: 2, menu_item_id: 8, quantity: 1, unit_price: "39000.00", total_price: "39000.00" }, { id: 5, order_id: 2, menu_item_id: 9, quantity: 1, unit_price: "21000.00", total_price: "21000.00" }, { id: 6, order_id: 2, menu_item_id: 11, quantity: 1, unit_price: "12000.00", total_price: "12000.00" }, { id: 7, order_id: 2, menu_item_id: 3, quantity: 1, unit_price: "19000.00", total_price: "19000.00" }] },
@@ -364,6 +398,7 @@ function renderPOS() {
   const activeOrder = getActiveOrderForTable(state.pos.selectedTableId);
   const cartTotals = calculateCartTotals();
   const categories = ["appetizer", "main_course", "dessert", "beverage"];
+  const selectedTableOrder = selectedTable ? getActiveOrderForTable(selectedTable.id) : null;
 
   setViewHtml(`
     <section class="pos-layout">
@@ -371,13 +406,41 @@ function renderPOS() {
         <section class="module">
           <div class="module-header">
             <div>
-              <h2>Mapa de mesas</h2>
-              <p>Selecciona una mesa para abrir o cobrar cuenta</p>
+              <h2>Croquis del restaurante</h2>
+              <p>Entrada, barra, cocina, bodega, banos, salon y terraza operativa</p>
             </div>
             <span class="badge dark">${selectedTable ? `Mesa ${selectedTable.table_number}` : "Sin mesa"}</span>
           </div>
-          <div class="pos-table-grid">
-            ${state.data.tables.map((tableItem) => posTableButton(tableItem)).join("")}
+          <div class="floor-toolbar">
+            <span><b></b> Disponible</span>
+            <span><b></b> Ocupada</span>
+            <span><b></b> Reservada</span>
+            <span><b></b> Mantenimiento</span>
+          </div>
+          <div class="floor-plan" aria-label="Croquis interactivo de RestoOps">
+            ${floorFeature("Entrada", "Recepcion", "feature-entry")}
+            ${floorFeature("Barra", "Cocteles y caja", "feature-bar")}
+            ${floorFeature("Cocina", "Salida de platos", "feature-kitchen")}
+            ${floorFeature("Bodega", "Insumos", "feature-storage")}
+            ${floorFeature("Banos", "Clientes", "feature-restrooms")}
+            ${floorFeature("Terraza", "Zona abierta", "feature-terrace")}
+            ${state.data.tables.map((tableItem) => posMapTable(tableItem)).join("")}
+            <div class="floor-path path-main"></div>
+            <div class="floor-path path-service"></div>
+          </div>
+          <div class="floor-inspector">
+            <div>
+              <span>Mesa seleccionada</span>
+              <strong>${selectedTable ? `${selectedTable.table_number} · ${selectedTable.capacity} puestos` : "Sin mesa"}</strong>
+            </div>
+            <div>
+              <span>Estado</span>
+              <strong>${selectedTable ? selectedTable.status : "-"}</strong>
+            </div>
+            <div>
+              <span>Cuenta activa</span>
+              <strong>${selectedTableOrder ? money(selectedTableOrder.total) : "Sin cuenta"}</strong>
+            </div>
           </div>
         </section>
 
@@ -442,11 +505,27 @@ function renderPOS() {
   });
 }
 
-function posTableButton(tableItem) {
+function floorFeature(title, subtitle, className) {
+  return `
+    <div class="floor-feature ${className}">
+      <strong>${title}</strong>
+      <span>${subtitle}</span>
+    </div>
+  `;
+}
+
+function posMapTable(tableItem) {
   const isSelected = Number(state.pos.selectedTableId) === tableItem.id;
   const activeOrder = getActiveOrderForTable(tableItem.id);
+  const layout = POS_TABLE_LAYOUT[tableItem.table_number] || { x: 45, y: 45, shape: "square" };
   return `
-    <button type="button" class="pos-table ${tableItem.status} ${isSelected ? "selected" : ""}" onclick="selectPOSTable(${tableItem.id})">
+    <button
+      type="button"
+      class="floor-table ${layout.shape} ${tableItem.status} ${isSelected ? "selected" : ""}"
+      style="left: ${layout.x}%; top: ${layout.y}%;"
+      onclick="selectPOSTable(${tableItem.id})"
+      aria-label="Mesa ${tableItem.table_number}, ${tableItem.status}"
+    >
       <span>${tableItem.table_number}</span>
       <strong>${tableItem.capacity} pax</strong>
       <em>${activeOrder ? money(activeOrder.total) : tableItem.status}</em>
@@ -612,16 +691,16 @@ function renderMenu() {
     formId: "menuForm",
     fields: `
       ${select("restaurant_id", "Restaurante", state.data.restaurants, "name")}
-      ${input("name", "Producto", "Risotto de hongos")}
-      ${textarea("description", "Descripcion", "Parmesano y aceite de trufa")}
+      ${input("name", "Producto", "Spaghetti carbonara")}
+      ${textarea("description", "Descripcion", "Guanciale, pecorino romano, yema y pimienta negra")}
       ${selectOptions("category", "Categoria", ["appetizer", "main_course", "dessert", "beverage"])}
-      ${input("price", "Precio", "42000", "number")}
+      ${input("price", "Precio", "44000", "number")}
       ${selectOptions("is_available", "Disponible", ["true", "false"])}
     `,
     columns: ["Producto", "Categoria", "Precio", "Disponible", "Acciones"],
     rows: state.data.menu.map((item) => [
       item.name,
-      badge(item.category),
+      badge(categoryLabel(item.category)),
       money(item.price),
       item.is_available ? badge("si") : badge("no", "danger"),
       deleteAction("menu", item.id)

@@ -728,62 +728,244 @@ td {
   gap: 18px;
 }
 
-.pos-table-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+.floor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
 }
 
-.pos-table {
-  display: grid;
-  gap: 8px;
-  min-height: 104px;
+.floor-toolbar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.floor-toolbar b {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #dfe9df;
+}
+
+.floor-toolbar span:nth-child(2) b {
+  background: #ead9b3;
+}
+
+.floor-toolbar span:nth-child(3) b {
+  background: #f7d993;
+}
+
+.floor-toolbar span:nth-child(4) b {
+  background: #d2d8d3;
+}
+
+.floor-plan {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
   border: 1px solid var(--line);
-  padding: 14px;
-  color: var(--ink);
-  background: #ffffff;
-  text-align: left;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(24, 52, 37, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(24, 52, 37, 0.06) 1px, transparent 1px),
+    linear-gradient(135deg, #fbfaf4, #f4f7f1 56%, #efe4c8);
+  background-size: 28px 28px, 28px 28px, auto;
+  box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.42);
 }
 
-.pos-table span,
-.pos-table strong,
-.pos-table em {
+.floor-feature {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  gap: 3px;
+  border: 1px solid rgba(24, 52, 37, 0.16);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--sage-dark);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 12px 30px rgba(18, 28, 22, 0.07);
+}
+
+.floor-feature strong,
+.floor-feature span {
   display: block;
 }
 
-.pos-table span {
+.floor-feature strong {
+  font-size: 14px;
+}
+
+.floor-feature span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.feature-entry {
+  left: 4%;
+  top: 6%;
+  width: 18%;
+}
+
+.feature-bar {
+  left: 5%;
+  bottom: 8%;
+  width: 24%;
+  min-height: 86px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #183425, #294b37);
+}
+
+.feature-bar span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.feature-kitchen {
+  right: 4%;
+  top: 7%;
+  width: 23%;
+  min-height: 92px;
+  background: #fff5dc;
+}
+
+.feature-storage {
+  right: 5%;
+  bottom: 8%;
+  width: 18%;
+  background: #eff3ed;
+}
+
+.feature-restrooms {
+  right: 28%;
+  top: 8%;
+  width: 15%;
+  background: #eef6f6;
+}
+
+.feature-terrace {
+  left: 44%;
+  bottom: 6%;
+  width: 29%;
+  min-height: 76px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.floor-path {
+  position: absolute;
+  z-index: 0;
+  border-radius: 999px;
+  background: rgba(111, 139, 117, 0.12);
+}
+
+.path-main {
+  left: 10%;
+  top: 44%;
+  width: 78%;
+  height: 56px;
+}
+
+.path-service {
+  right: 28%;
+  top: 18%;
+  width: 52px;
+  height: 68%;
+}
+
+.floor-table {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  width: 104px;
+  min-height: 92px;
+  border: 1px solid var(--line);
+  padding: 10px;
+  color: var(--ink);
+  background: #ffffff;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 14px 32px rgba(18, 28, 22, 0.09);
+}
+
+.floor-table.round {
+  width: 98px;
+  min-height: 98px;
+  border-radius: 999px;
+}
+
+.floor-table.square {
+  border-radius: 14px;
+}
+
+.floor-table.wide {
+  width: 132px;
+}
+
+.floor-table.vip {
+  width: 150px;
+  min-height: 88px;
+  border-radius: 18px;
+  border-color: rgba(216, 193, 138, 0.7);
+  background: #fff8e8;
+}
+
+.floor-table.bar-seat {
+  width: 118px;
+  min-height: 74px;
+  border-radius: 999px;
+}
+
+.floor-table span,
+.floor-table strong,
+.floor-table em {
+  display: block;
+}
+
+.floor-table span {
   font-size: 20px;
   font-weight: 900;
 }
 
-.pos-table strong,
-.pos-table em {
+.floor-table strong,
+.floor-table em {
   color: var(--muted);
   font-size: 12px;
   font-style: normal;
 }
 
-.pos-table.available {
+.floor-table.available {
   border-color: #dfe9df;
+  background: #ffffff;
 }
 
-.pos-table.occupied,
-.pos-table.reserved {
+.floor-table.occupied,
+.floor-table.reserved {
   border-color: #e8d7b7;
   background: #fffaf0;
 }
 
-.pos-table.maintenance {
+.floor-table.maintenance {
   opacity: 0.56;
 }
 
-.pos-table.selected {
+.floor-table.selected {
   color: #ffffff;
   border-color: #102017;
   background: #102017;
+  box-shadow: 0 18px 38px rgba(16, 32, 23, 0.22);
 }
 
-.pos-table:hover,
+.floor-table:hover,
+.floor-table:focus-visible {
+  transform: translate(-50%, calc(-50% - 2px));
+  box-shadow: 0 16px 34px rgba(18, 28, 22, 0.08);
+}
+
 .pos-product:hover,
 .stat-card:hover,
 .report-card:hover {
@@ -791,16 +973,41 @@ td {
   box-shadow: 0 16px 34px rgba(18, 28, 22, 0.08);
 }
 
-.pos-table,
+.floor-table,
 .pos-product,
 .stat-card,
 .report-card {
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
-.pos-table.selected strong,
-.pos-table.selected em {
+.floor-table.selected strong,
+.floor-table.selected em {
   color: rgba(255, 255, 255, 0.72);
+}
+
+.floor-inspector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.floor-inspector div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.floor-inspector span,
+.floor-inspector strong {
+  display: block;
+}
+
+.floor-inspector span {
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
 }
 
 .pos-category-grid {
@@ -944,6 +1151,16 @@ td {
   gap: 10px;
 }
 
+@media (max-width: 1180px) {
+  .pos-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .pos-ticket {
+    position: static;
+  }
+}
+
 @media (max-width: 620px) {
   .app-shell {
     display: block;
@@ -981,6 +1198,33 @@ td {
 
   .pos-ticket {
     position: static;
+  }
+
+  .floor-plan {
+    min-height: 600px;
+  }
+
+  .floor-table {
+    width: 86px;
+    min-height: 78px;
+  }
+
+  .floor-table.round {
+    width: 82px;
+    min-height: 82px;
+  }
+
+  .floor-table.wide,
+  .floor-table.vip {
+    width: 104px;
+  }
+
+  .floor-feature {
+    padding: 9px;
+  }
+
+  .floor-inspector {
+    grid-template-columns: 1fr;
   }
 
   .stats-grid {

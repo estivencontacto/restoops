@@ -18,11 +18,17 @@ Vista principal con resumen de ventas, mesas disponibles, reservas del dia y pro
 
 ![Dashboard de RestoOps](docs/images/02-dashboard.png)
 
-### POS
+### POS con croquis del restaurante
 
-Modulo POS para seleccionar mesas, agregar productos al carrito, enviar pedidos a cocina y cobrar cuentas.
+Modulo POS con un croquis operativo del restaurante: entrada, barra, cocina, bodega, banos, terraza, zonas VIP y mesas interactivas por estado.
 
 ![POS de RestoOps](docs/images/03-pos.png)
+
+### Carta italiana
+
+Menu tematico de trattoria italiana con entradas, pastas, platos fuertes, postres, gaseosas, cervezas, vinos, sangrias y cocteles.
+
+![Menu italiano de RestoOps](docs/images/05-menu.png)
 
 ### Reservas
 
@@ -34,7 +40,7 @@ Gestion de reservas con cliente, restaurante, mesa, fecha, hora, cantidad de per
 
 Panel administrativo para crear usuarios, cambiar roles, activar/desactivar perfiles y resetear contrasenas.
 
-![Usuarios de RestoOps](docs/images/05-usuarios.png)
+![Usuarios de RestoOps](docs/images/06-usuarios.png)
 
 ## Funcionalidades
 
@@ -45,8 +51,8 @@ Panel administrativo para crear usuarios, cambiar roles, activar/desactivar perf
 - Gestion de mesas con estados: disponible, reservada, ocupada y mantenimiento.
 - Registro de clientes.
 - Creacion, confirmacion y cancelacion de reservas.
-- Menu con categorias, precios y disponibilidad.
-- POS para pedidos por mesa.
+- Menu italiano con categorias, precios y disponibilidad.
+- POS para pedidos por mesa con croquis visual del restaurante.
 - Calculo automatico de subtotal, impuestos y total.
 - Pagos por efectivo, tarjeta, debito o transferencia.
 - Reportes operativos.

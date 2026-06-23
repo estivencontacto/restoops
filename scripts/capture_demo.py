@@ -130,7 +130,8 @@ async def main() -> None:
             for view, filename, selector in [
                 ("pos", "03-pos.png", ".pos-layout"),
                 ("reservations", "04-reservas.png", "#reservationForm"),
-                ("users", "05-usuarios.png", "#userForm"),
+                ("menu", "05-menu.png", "#menuForm"),
+                ("users", "06-usuarios.png", "#userForm"),
             ]:
                 await send(ws, "Runtime.evaluate", {"expression": f"setView('{view}'); true;", "returnByValue": True})
                 await wait_for(ws, f"Boolean(document.querySelector('{selector}'))", 10)
