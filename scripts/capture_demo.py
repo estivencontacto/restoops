@@ -135,6 +135,9 @@ async def main() -> None:
             ]:
                 await send(ws, "Runtime.evaluate", {"expression": f"setView('{view}'); true;", "returnByValue": True})
                 await wait_for(ws, f"Boolean(document.querySelector('{selector}'))", 10)
+                if view == "pos":
+                    await send(ws, "Runtime.evaluate", {"expression": "selectPOSTable(7); true;", "returnByValue": True})
+                    await wait_for(ws, "Boolean(document.querySelector('.trace-card'))", 10)
                 await asyncio.sleep(0.6)
                 await screenshot(ws, filename)
     finally:

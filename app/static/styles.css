@@ -765,7 +765,7 @@ td {
 
 .floor-plan {
   position: relative;
-  min-height: 520px;
+  min-height: 640px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -808,7 +808,7 @@ td {
 .feature-entry {
   left: 4%;
   top: 6%;
-  width: 18%;
+  width: 16%;
 }
 
 .feature-bar {
@@ -827,29 +827,29 @@ td {
 .feature-kitchen {
   right: 4%;
   top: 7%;
-  width: 23%;
+  width: 20%;
   min-height: 92px;
   background: #fff5dc;
 }
 
 .feature-storage {
-  right: 5%;
+  right: 4%;
   bottom: 8%;
-  width: 18%;
+  width: 17%;
   background: #eff3ed;
 }
 
 .feature-restrooms {
   right: 28%;
   top: 8%;
-  width: 15%;
+  width: 14%;
   background: #eef6f6;
 }
 
 .feature-terrace {
-  left: 44%;
+  left: 42%;
   bottom: 6%;
-  width: 29%;
+  width: 28%;
   min-height: 76px;
   background: rgba(255, 255, 255, 0.58);
 }
@@ -1099,6 +1099,149 @@ td {
   background: #f8faf7;
 }
 
+.active-order em {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.trace-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trace-step {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px;
+  background: #fbfcfa;
+}
+
+.trace-step.done {
+  border-color: #d9e8d8;
+  background: #f0f6ef;
+}
+
+.trace-step span,
+.trace-step strong {
+  display: block;
+}
+
+.trace-step span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.trace-step strong {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.cash-register {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8faf7, #fffaf0);
+}
+
+.cash-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 12px;
+  color: #ffffff;
+  background: #102017;
+}
+
+.cash-display span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cash-display strong {
+  font-size: 24px;
+}
+
+.cash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cash-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cash-summary div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.cash-summary span,
+.cash-summary strong {
+  display: block;
+}
+
+.cash-summary span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cash-summary strong {
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.waiter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.waiter-card {
+  display: grid;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.waiter-card span {
+  color: var(--wine);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.waiter-card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.waiter-card b {
+  color: var(--ink);
+}
+
 .ticket-lines {
   display: grid;
   gap: 10px;
@@ -1201,7 +1344,7 @@ td {
   }
 
   .floor-plan {
-    min-height: 600px;
+    min-height: 680px;
   }
 
   .floor-table {
@@ -1224,6 +1367,12 @@ td {
   }
 
   .floor-inspector {
+    grid-template-columns: 1fr;
+  }
+
+  .trace-card,
+  .cash-grid,
+  .cash-summary {
     grid-template-columns: 1fr;
   }
 

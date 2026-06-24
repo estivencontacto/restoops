@@ -20,7 +20,7 @@ Vista principal con resumen de ventas, mesas disponibles, reservas del dia y pro
 
 ### POS con croquis del restaurante
 
-Modulo POS con un croquis operativo del restaurante: entrada, barra, cocina, bodega, banos, terraza, zonas VIP y mesas interactivas por estado.
+Modulo POS con un croquis operativo del restaurante: entrada, barra, cocina, bodega, banos, terraza, zonas VIP y mesas interactivas por estado. Incluye trazabilidad del servicio, caja, propina, cambio y mesero responsable.
 
 ![POS de RestoOps](docs/images/03-pos.png)
 
@@ -53,6 +53,9 @@ Panel administrativo para crear usuarios, cambiar roles, activar/desactivar perf
 - Creacion, confirmacion y cancelacion de reservas.
 - Menu italiano con categorias, precios y disponibilidad.
 - POS para pedidos por mesa con croquis visual del restaurante.
+- Trazabilidad desde reserva, asistencia, pedido, cocina, servicio en mesa y pago.
+- Caja tipo calculadora con total, propina, recibido, metodo de pago y cambio.
+- Propinas y ventas asociadas a meseros para cierre de turno.
 - Calculo automatico de subtotal, impuestos y total.
 - Pagos por efectivo, tarjeta, debito o transferencia.
 - Reportes operativos.
@@ -282,8 +285,10 @@ Perfil limitado para clientes. Puede acceder a reservas y menu.
 5. Entra a **Reservas** y agenda una nueva reserva.
 6. Entra a **POS**, selecciona una mesa y agrega platos.
 7. Envia el pedido a cocina.
-8. Cobra la cuenta con el metodo de pago correspondiente.
-9. Entra a **Usuarios** para crear perfiles de staff o clientes.
+8. Marca el pedido como servido cuando cocina lo entregue.
+9. Cobra desde la caja indicando mesero, metodo de pago, propina y dinero recibido.
+10. El sistema calcula el cambio, registra la propina del mesero y libera la mesa.
+11. Entra a **Usuarios** para crear perfiles de staff o clientes.
 
 ## Pruebas
 

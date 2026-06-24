@@ -13,6 +13,8 @@ from app.database.models import (
     Reservation,
     Restaurant,
     RestaurantTable,
+    User,
+    UserRole,
 )
 from app.modules.notifications.service import send_notification
 from app.modules.orders.schemas import OrderCreate, OrderItemCreate, OrderUpdate
@@ -49,6 +51,14 @@ def _validate_header(db: Session, restaurant_id: int, table_id: int, reservation
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
 
 
+def _validate_waiter(db: Session, waiter_id: int | None) -> None:
+    if not waiter_id:
+        return
+    waiter = db.get(User, waiter_id)
+    if not waiter or waiter.role not in {UserRole.admin, UserRole.staff}:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Waiter not found")
+
+
 def _build_items(db: Session, restaurant_id: int, items: list[OrderItemCreate]) -> tuple[list[OrderItem], Decimal, Decimal, Decimal]:
     order_items: list[OrderItem] = []
     subtotal = Decimal("0.00")
@@ -78,12 +88,14 @@ def _build_items(db: Session, restaurant_id: int, items: list[OrderItemCreate]) 
 
 def create_order(db: Session, payload: OrderCreate) -> Order:
     _validate_header(db, payload.restaurant_id, payload.table_id, payload.reservation_id, payload.customer_id)
+    _validate_waiter(db, payload.waiter_id)
     items, subtotal, tax, total = _build_items(db, payload.restaurant_id, payload.items)
     order = Order(
         restaurant_id=payload.restaurant_id,
         table_id=payload.table_id,
         reservation_id=payload.reservation_id,
         customer_id=payload.customer_id,
+        waiter_id=payload.waiter_id,
         subtotal=subtotal,
         tax=tax,
         total=total,

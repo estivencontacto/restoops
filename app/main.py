@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
@@ -90,8 +91,10 @@ def prepare_local_database() -> None:
         return
 
     Base.metadata.create_all(bind=engine)
+    ensure_sqlite_schema()
     db = SessionLocal()
     try:
+        ensure_demo_staff(db)
         existing_admin = db.query(User).filter(User.email == settings.default_admin_email.lower()).first()
         if existing_admin:
             seed_sample_data(db)
@@ -109,6 +112,50 @@ def prepare_local_database() -> None:
         seed_sample_data(db)
     finally:
         db.close()
+
+
+def ensure_sqlite_schema() -> None:
+    columns_by_table = {
+        "orders": {
+            "waiter_id": "INTEGER",
+        },
+        "payments": {
+            "waiter_id": "INTEGER",
+            "tip_amount": "NUMERIC(10, 2) DEFAULT 0.00",
+            "received_amount": "NUMERIC(10, 2) DEFAULT 0.00",
+            "change_amount": "NUMERIC(10, 2) DEFAULT 0.00",
+        },
+    }
+    with engine.begin() as connection:
+        for table, columns in columns_by_table.items():
+            existing = {row[1] for row in connection.execute(text(f"PRAGMA table_info({table})"))}
+            for column, definition in columns.items():
+                if column not in existing:
+                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {definition}"))
+        connection.execute(text("UPDATE payments SET tip_amount = 0 WHERE tip_amount IS NULL"))
+        connection.execute(text("UPDATE payments SET received_amount = amount WHERE received_amount IS NULL OR received_amount = 0"))
+        connection.execute(text("UPDATE payments SET change_amount = 0 WHERE change_amount IS NULL"))
+
+
+def ensure_demo_staff(db) -> None:
+    staff_members = [
+        ("Sofia Romano", "sofia.romano@restoops.co"),
+        ("Marco Bellini", "marco.bellini@restoops.co"),
+        ("Valentina Costa", "valentina.costa@restoops.co"),
+    ]
+    for full_name, email in staff_members:
+        exists = db.query(User).filter(User.email == email).first()
+        if not exists:
+            db.add(
+                User(
+                    full_name=full_name,
+                    email=email,
+                    hashed_password=hash_password("RestoOps2026"),
+                    role=UserRole.staff,
+                    is_active=True,
+                )
+            )
+    db.commit()
 
 
 def seed_sample_data(db) -> None:
@@ -188,10 +235,15 @@ def seed_sample_data(db) -> None:
         ]
     )
 
+    waiters = db.query(User).filter(User.role == UserRole.staff).order_by(User.id).all()
+    waiter_a = waiters[0].id if waiters else None
+    waiter_b = waiters[1].id if len(waiters) > 1 else waiter_a
+
     order = Order(
         restaurant_id=restaurant.id,
         table_id=tables[6].id,
         customer_id=customers[2].id,
+        waiter_id=waiter_a,
         status=OrderStatus.preparing,
         subtotal=Decimal("98000.00"),
         tax=Decimal("9800.00"),
@@ -210,6 +262,7 @@ def seed_sample_data(db) -> None:
         restaurant_id=restaurant.id,
         table_id=tables[9].id,
         customer_id=customers[4].id,
+        waiter_id=waiter_b,
         status=OrderStatus.paid,
         subtotal=Decimal("64000.00"),
         tax=Decimal("6400.00"),
@@ -221,7 +274,11 @@ def seed_sample_data(db) -> None:
     db.add(
         Payment(
             order_id=paid_order.id,
+            waiter_id=waiter_b,
             amount=Decimal("70400.00"),
+            tip_amount=Decimal("8000.00"),
+            received_amount=Decimal("78400.00"),
+            change_amount=Decimal("0.00"),
             payment_method=PaymentMethod.credit_card,
             status=PaymentStatus.paid,
             paid_at=datetime.now(timezone.utc),

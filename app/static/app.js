@@ -1,16 +1,16 @@
 const API_BASE = "";
 const TAX_RATE = 0.1;
 const POS_TABLE_LAYOUT = {
-  A1: { x: 18, y: 28, shape: "round" },
-  A2: { x: 34, y: 28, shape: "round" },
-  A3: { x: 50, y: 28, shape: "round" },
-  B1: { x: 18, y: 54, shape: "square" },
-  B2: { x: 36, y: 56, shape: "square" },
-  B4: { x: 58, y: 55, shape: "square wide" },
-  C1: { x: 76, y: 30, shape: "square wide" },
-  C2: { x: 76, y: 56, shape: "square wide" },
-  VIP1: { x: 60, y: 78, shape: "vip" },
-  BAR1: { x: 15, y: 79, shape: "bar-seat" }
+  A1: { x: 17, y: 30, shape: "round" },
+  A2: { x: 34, y: 30, shape: "round" },
+  A3: { x: 51, y: 30, shape: "round" },
+  B1: { x: 17, y: 56, shape: "square" },
+  B2: { x: 35, y: 58, shape: "square" },
+  B4: { x: 55, y: 58, shape: "square wide" },
+  C1: { x: 78, y: 43, shape: "square wide" },
+  C2: { x: 78, y: 66, shape: "square wide" },
+  VIP1: { x: 58, y: 84, shape: "vip" },
+  BAR1: { x: 16, y: 84, shape: "bar-seat" }
 };
 const ITALIAN_MENU_ITEMS = [
   { name: "Bruschetta al pomodoro", description: "Pan rustico, tomate, ajo, albahaca y aceite de oliva", category: "appetizer", price: "18000.00" },
@@ -73,7 +73,10 @@ const state = {
   pos: {
     selectedTableId: null,
     cart: [],
-    paymentMethod: "cash"
+    paymentMethod: "cash",
+    waiterId: "",
+    tipAmount: 0,
+    receivedAmount: 0
   }
 };
 
@@ -399,6 +402,11 @@ function renderPOS() {
   const cartTotals = calculateCartTotals();
   const categories = ["appetizer", "main_course", "dessert", "beverage"];
   const selectedTableOrder = selectedTable ? getActiveOrderForTable(selectedTable.id) : null;
+  const waiters = getWaiters();
+  if (!state.pos.waiterId && waiters.length) {
+    state.pos.waiterId = String(waiters[0].id);
+  }
+  const cashier = activeOrder ? calculateCashier(activeOrder) : calculateCashier({ total: 0 });
 
   setViewHtml(`
     <section class="pos-layout">
@@ -465,6 +473,18 @@ function renderPOS() {
             `).join("")}
           </div>
         </section>
+
+        <section class="module">
+          <div class="module-header">
+            <div>
+              <h2>Ventas y propinas</h2>
+              <p>Resumen por mesero para cierre de turno</p>
+            </div>
+          </div>
+          <div class="waiter-grid">
+            ${waiterPerformanceCards()}
+          </div>
+        </section>
       </div>
 
       <aside class="pos-ticket">
@@ -474,6 +494,7 @@ function renderPOS() {
         </div>
 
         ${activeOrder ? activeOrderSummary(activeOrder) : ""}
+        ${activeOrder ? orderTrace(activeOrder) : ""}
 
         <div class="ticket-lines">
           ${state.pos.cart.length ? state.pos.cart.map((item) => posCartLine(item)).join("") : `<div class="empty-state">Agrega productos desde el menu.</div>`}
@@ -485,11 +506,34 @@ function renderPOS() {
           <div class="ticket-total"><span>Total</span><strong>${money(cartTotals.total)}</strong></div>
         </div>
 
-        <label>Metodo de pago
+        <section class="cash-register">
+          <div class="cash-display">
+            <span>Total cuenta</span>
+            <strong>${money(cashier.baseTotal)}</strong>
+          </div>
+          <div class="cash-grid">
+            <label>Mesero
+              <select id="posWaiter">
+                ${waiters.map((waiter) => `<option value="${waiter.id}" ${String(state.pos.waiterId) === String(waiter.id) ? "selected" : ""}>${waiter.full_name}</option>`).join("")}
+              </select>
+            </label>
+            <label>Metodo de pago
           <select id="posPaymentMethod">
             ${["cash", "credit_card", "debit_card", "transfer"].map((method) => `<option value="${method}" ${state.pos.paymentMethod === method ? "selected" : ""}>${method}</option>`).join("")}
           </select>
-        </label>
+            </label>
+            <label>Propina
+              <input id="posTipAmount" type="number" min="0" step="1000" value="${state.pos.tipAmount || 0}">
+            </label>
+            <label>Recibido
+              <input id="posReceivedAmount" type="number" min="0" step="1000" value="${state.pos.receivedAmount || cashier.totalToCollect}">
+            </label>
+          </div>
+          <div class="cash-summary">
+            <div><span>A cobrar</span><strong>${money(cashier.totalToCollect)}</strong></div>
+            <div><span>Cambio</span><strong>${money(cashier.change)}</strong></div>
+          </div>
+        </section>
 
         <div class="ticket-actions">
           <button type="button" onclick="submitPOSOrder()">Enviar pedido</button>
@@ -502,6 +546,22 @@ function renderPOS() {
 
   document.getElementById("posPaymentMethod")?.addEventListener("change", (event) => {
     state.pos.paymentMethod = event.target.value;
+    if (state.pos.paymentMethod !== "cash") {
+      const currentOrder = getActiveOrderForTable(state.pos.selectedTableId);
+      state.pos.receivedAmount = currentOrder ? calculateCashier(currentOrder).totalToCollect : 0;
+    }
+    renderPOS();
+  });
+  document.getElementById("posWaiter")?.addEventListener("change", (event) => {
+    state.pos.waiterId = event.target.value;
+  });
+  document.getElementById("posTipAmount")?.addEventListener("input", (event) => {
+    state.pos.tipAmount = Number(event.target.value || 0);
+    renderPOS();
+  });
+  document.getElementById("posReceivedAmount")?.addEventListener("input", (event) => {
+    state.pos.receivedAmount = Number(event.target.value || 0);
+    renderPOS();
   });
 }
 
@@ -566,6 +626,7 @@ function activeOrderSummary(order) {
       <div>
         <span>Pedido #${order.id}</span>
         <strong>${badge(order.status)}</strong>
+        <em>${waiterName(order.waiter_id)}</em>
       </div>
       <div class="row-actions">
         <button type="button" onclick="updateOrder(${order.id}, 'preparing')">Cocina</button>
@@ -573,6 +634,47 @@ function activeOrderSummary(order) {
       </div>
     </div>
   `;
+}
+
+function orderTrace(order) {
+  const reservation = order.reservation_id ? state.data.reservations.find((item) => item.id === Number(order.reservation_id)) : null;
+  const payment = state.data.payments.find((item) => item.order_id === order.id);
+  const steps = [
+    { label: "Reserva", done: Boolean(reservation), detail: reservation ? `#${reservation.id} ${reservation.status}` : "Sin reserva" },
+    { label: "Asistencia", done: Boolean(order.table_id), detail: `Mesa ${tableName(order.table_id)}` },
+    { label: "Pedido", done: true, detail: `#${order.id}` },
+    { label: "Cocina", done: ["preparing", "served", "paid"].includes(order.status), detail: order.status },
+    { label: "Mesa", done: ["served", "paid"].includes(order.status), detail: order.status === "served" || order.status === "paid" ? "Servido" : "Pendiente" },
+    { label: "Pago", done: Boolean(payment?.status === "paid" || order.status === "paid"), detail: payment ? `${payment.payment_method} ${money(payment.tip_amount || 0)} propina` : "Pendiente" }
+  ];
+  return `
+    <div class="trace-card">
+      ${steps.map((step) => `
+        <div class="trace-step ${step.done ? "done" : ""}">
+          <span>${step.label}</span>
+          <strong>${step.detail}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function waiterPerformanceCards() {
+  const waiters = getWaiters();
+  if (!waiters.length) return `<div class="empty-state">Crea usuarios staff para ver ventas y propinas por mesero.</div>`;
+  return waiters.map((waiter) => {
+    const payments = state.data.payments.filter((payment) => Number(payment.waiter_id) === Number(waiter.id) && payment.status === "paid");
+    const sales = sum(payments.map((payment) => Number(payment.amount || 0)));
+    const tips = sum(payments.map((payment) => Number(payment.tip_amount || 0)));
+    return `
+      <article class="waiter-card">
+        <span>${waiter.role}</span>
+        <strong>${waiter.full_name}</strong>
+        <div><small>Ventas</small><b>${money(sales)}</b></div>
+        <div><small>Propinas</small><b>${money(tips)}</b></div>
+      </article>
+    `;
+  }).join("");
 }
 
 function renderRestaurants() {
@@ -724,12 +826,14 @@ function renderOrders() {
       ${select("table_id", "Mesa", state.data.tables, "table_number")}
       ${select("customer_id", "Cliente", state.data.customers, "full_name", true)}
       ${selectReservations("reservation_id", "Reserva", state.data.reservations)}
+      ${selectWaiters("waiter_id", "Mesero", getWaiters())}
       ${select("menu_item_id", "Producto", state.data.menu, "name")}
       ${input("quantity", "Cantidad", "1", "number")}
     `,
-    columns: ["Mesa", "Cliente", "Estado", "Subtotal", "Total", "Items", "Acciones"],
+    columns: ["Mesa", "Mesero", "Cliente", "Estado", "Subtotal", "Total", "Items", "Acciones"],
     rows: state.data.orders.map((item) => [
       tableName(item.table_id),
+      waiterName(item.waiter_id),
       item.customer_id ? customerName(item.customer_id) : "-",
       badge(item.status),
       money(item.subtotal),
@@ -748,13 +852,20 @@ function renderPayments() {
     formId: "paymentForm",
     fields: `
       ${select("order_id", "Pedido", state.data.orders, "id")}
+      ${selectWaiters("waiter_id", "Mesero", getWaiters())}
       ${input("amount", "Monto", orderTotalSuggestion(), "number")}
+      ${input("tip_amount", "Propina", "0", "number")}
+      ${input("received_amount", "Recibido", orderTotalSuggestion(), "number")}
       ${selectOptions("payment_method", "Metodo", ["cash", "credit_card", "debit_card", "transfer"])}
     `,
-    columns: ["Pedido", "Monto", "Metodo", "Estado", "Pagado", "Acciones"],
+    columns: ["Pedido", "Mesero", "Monto", "Propina", "Recibido", "Cambio", "Metodo", "Estado", "Pagado", "Acciones"],
     rows: state.data.payments.map((item) => [
       `#${item.order_id}`,
+      waiterName(item.waiter_id),
       money(item.amount),
+      money(item.tip_amount || 0),
+      money(item.received_amount || item.amount),
+      money(item.change_amount || 0),
       item.payment_method,
       badge(item.status),
       item.paid_at ? new Date(item.paid_at).toLocaleString("es-CO") : "-",
@@ -763,7 +874,10 @@ function renderPayments() {
     onSubmit: (payload) => saveItem("payments", "/payments", {
       ...payload,
       order_id: Number(payload.order_id),
-      amount: Number(payload.amount)
+      waiter_id: payload.waiter_id ? Number(payload.waiter_id) : defaultWaiterId(),
+      amount: Number(payload.amount),
+      tip_amount: Number(payload.tip_amount || 0),
+      received_amount: Number(payload.received_amount || payload.amount)
     })
   });
 }
@@ -939,6 +1053,7 @@ async function saveOrder(payload) {
     table_id: tableId,
     customer_id: payload.customer_id ? Number(payload.customer_id) : reservation?.customer_id || null,
     reservation_id: reservation ? reservation.id : null,
+    waiter_id: payload.waiter_id ? Number(payload.waiter_id) : defaultWaiterId(),
     items: [{ menu_item_id: Number(payload.menu_item_id), quantity: Number(payload.quantity) }]
   };
   if (state.apiOnline && state.token) {
@@ -998,6 +1113,7 @@ async function createOrder(payload) {
     table_id: payload.table_id,
     reservation_id: payload.reservation_id || null,
     customer_id: payload.customer_id || null,
+    waiter_id: payload.waiter_id || defaultWaiterId(),
     status: "pending",
     subtotal: subtotal.toFixed(2),
     tax: tax.toFixed(2),
@@ -1062,6 +1178,7 @@ async function submitPOSOrder() {
       table_id: selectedTable.id,
       customer_id: null,
       reservation_id: null,
+      waiter_id: state.pos.waiterId ? Number(state.pos.waiterId) : defaultWaiterId(),
       items: state.pos.cart.map((item) => ({ menu_item_id: item.menu_item_id, quantity: item.quantity }))
     };
     const order = await createOrder(payload);
@@ -1079,22 +1196,33 @@ async function chargePOSOrder(orderId) {
   const order = state.data.orders.find((item) => item.id === Number(orderId));
   if (!order) return;
   try {
+    const cashier = calculateCashier(order);
+    if (cashier.received < cashier.totalToCollect) {
+      toast("El dinero recibido no alcanza para cubrir cuenta y propina.");
+      return;
+    }
     if (state.apiOnline && state.token) {
       const payment = await request("/payments", {
         method: "POST",
         body: {
           order_id: order.id,
           amount: Number(order.total),
-          payment_method: state.pos.paymentMethod
+          payment_method: state.pos.paymentMethod,
+          waiter_id: state.pos.waiterId ? Number(state.pos.waiterId) : order.waiter_id || defaultWaiterId(),
+          tip_amount: cashier.tip,
+          received_amount: cashier.received
         }
       });
       await request(`/payments/${payment.id}/confirm`, { method: "PATCH" });
-      await setTableStatus(order.table_id, "available");
     } else {
       const payment = {
         id: nextDemoId(),
         order_id: order.id,
+        waiter_id: state.pos.waiterId ? Number(state.pos.waiterId) : order.waiter_id || defaultWaiterId(),
         amount: order.total,
+        tip_amount: cashier.tip.toFixed(2),
+        received_amount: cashier.received.toFixed(2),
+        change_amount: cashier.change.toFixed(2),
         payment_method: state.pos.paymentMethod,
         status: "paid",
         paid_at: new Date().toISOString(),
@@ -1103,11 +1231,15 @@ async function chargePOSOrder(orderId) {
       demo.payments.push(payment);
       const demoOrder = demo.orders.find((item) => item.id === order.id);
       if (demoOrder) demoOrder.status = "paid";
+      const reservation = demo.reservations.find((item) => item.id === order.reservation_id);
+      if (reservation) reservation.status = "completed";
       await setTableStatus(order.table_id, "available");
     }
+    state.pos.tipAmount = 0;
+    state.pos.receivedAmount = 0;
     await loadCollections();
     renderPOS();
-    toast("Cuenta cobrada y mesa liberada.");
+    toast(`Cuenta cobrada. Cambio: ${money(cashier.change)}. Mesa liberada.`);
   } catch (error) {
     toast(error.message);
   }
@@ -1336,6 +1468,16 @@ function selectReservations(name, label, options) {
   `;
 }
 
+function selectWaiters(name, label, options) {
+  return `
+    <label>${label}
+      <select name="${name}">
+        ${options.map((item) => `<option value="${item.id}" ${String(state.pos.waiterId) === String(item.id) ? "selected" : ""}>${item.full_name}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
+
 function selectOptions(name, label, options) {
   return `
     <label>${label}
@@ -1466,6 +1608,27 @@ function customerName(id) {
   return state.data.customers.find((item) => item.id === Number(id))?.full_name || `Cliente #${id}`;
 }
 
+function getWaiters() {
+  const users = state.data.users
+    .filter((item) => item.is_active && ["admin", "staff"].includes(item.role))
+    .sort((a, b) => {
+      if (a.role === b.role) return a.full_name.localeCompare(b.full_name);
+      return a.role === "staff" ? -1 : 1;
+    });
+  if (users.length) return users;
+  return state.user && ["admin", "staff"].includes(state.user.role) ? [state.user] : [];
+}
+
+function defaultWaiterId() {
+  const waiter = getWaiters()[0];
+  return waiter ? Number(waiter.id) : null;
+}
+
+function waiterName(id) {
+  if (!id) return "Sin asignar";
+  return state.data.users.find((item) => item.id === Number(id))?.full_name || `Mesero #${id}`;
+}
+
 function menuName(id) {
   return state.data.menu.find((item) => item.id === Number(id))?.name || `Producto #${id}`;
 }
@@ -1500,6 +1663,17 @@ function calculateCartTotals() {
   }, 0);
   const tax = subtotal * TAX_RATE;
   return { subtotal, tax, total: subtotal + tax };
+}
+
+function calculateCashier(order) {
+  const baseTotal = Number(order?.total || 0);
+  const tip = Number(state.pos.tipAmount || 0);
+  const totalToCollect = baseTotal + tip;
+  const received = state.pos.paymentMethod === "cash"
+    ? Number(state.pos.receivedAmount || totalToCollect)
+    : totalToCollect;
+  const change = Math.max(received - totalToCollect, 0);
+  return { baseTotal, tip, totalToCollect, received, change };
 }
 
 function categoryLabel(category) {

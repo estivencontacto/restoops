@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from app.core.security import hash_password
 from app.database.connection import SessionLocal
 from app.database.models import (
     MenuCategory,
@@ -12,6 +13,10 @@ from app.database.models import (
     PaymentMethod,
     PaymentStatus,
     Restaurant,
+    RestaurantTable,
+    TableStatus,
+    User,
+    UserRole,
 )
 
 
@@ -45,7 +50,30 @@ ITALIAN_MENU = [
 ]
 
 
-def create_order(db, restaurant_id: int, table_id: int, customer_id: int | None, lines: list[tuple[MenuItem, int]], status: OrderStatus) -> Order:
+def get_waiters(db):
+    waiters = db.query(User).filter(User.role == UserRole.staff).order_by(User.id).all()
+    if waiters:
+        return waiters
+    staff_members = [
+        ("Sofia Romano", "sofia.romano@restoops.co"),
+        ("Marco Bellini", "marco.bellini@restoops.co"),
+        ("Valentina Costa", "valentina.costa@restoops.co"),
+    ]
+    for full_name, email in staff_members:
+        db.add(
+            User(
+                full_name=full_name,
+                email=email,
+                hashed_password=hash_password("RestoOps2026"),
+                role=UserRole.staff,
+                is_active=True,
+            )
+        )
+    db.flush()
+    return db.query(User).filter(User.role == UserRole.staff).order_by(User.id).all()
+
+
+def create_order(db, restaurant_id: int, table_id: int, customer_id: int | None, waiter_id: int | None, lines: list[tuple[MenuItem, int]], status: OrderStatus) -> Order:
     subtotal = sum((item.price * quantity for item, quantity in lines), Decimal("0.00"))
     tax = (subtotal * Decimal("0.10")).quantize(Decimal("0.01"))
     total = subtotal + tax
@@ -53,6 +81,7 @@ def create_order(db, restaurant_id: int, table_id: int, customer_id: int | None,
         restaurant_id=restaurant_id,
         table_id=table_id,
         customer_id=customer_id,
+        waiter_id=waiter_id,
         status=status,
         subtotal=subtotal,
         tax=tax,
@@ -82,12 +111,28 @@ def main() -> None:
 
         restaurant.name = "RestoOps Trattoria"
         restaurant.email = "reservas@restoopstrattoria.com"
+        table_statuses = {
+            "A1": TableStatus.available,
+            "A2": TableStatus.available,
+            "A3": TableStatus.maintenance,
+            "B1": TableStatus.available,
+            "B2": TableStatus.occupied,
+            "B4": TableStatus.reserved,
+            "C1": TableStatus.occupied,
+            "C2": TableStatus.occupied,
+            "VIP1": TableStatus.reserved,
+            "BAR1": TableStatus.available,
+        }
+        for table in db.query(RestaurantTable).filter(RestaurantTable.restaurant_id == restaurant.id).all():
+            if table.table_number in table_statuses:
+                table.status = table_statuses[table.table_number]
 
         db.query(Payment).delete()
         db.query(OrderItem).delete()
         db.query(Order).delete()
         db.query(MenuItem).delete()
         db.flush()
+        waiters = get_waiters(db)
 
         menu_items = []
         for name, description, category, price in ITALIAN_MENU:
@@ -108,6 +153,7 @@ def main() -> None:
             restaurant.id,
             table_id=7,
             customer_id=3,
+            waiter_id=waiters[0].id,
             lines=[(menu_items[4], 1), (menu_items[7], 1)],
             status=OrderStatus.preparing,
         )
@@ -116,13 +162,18 @@ def main() -> None:
             restaurant.id,
             table_id=10,
             customer_id=5,
+            waiter_id=waiters[1].id if len(waiters) > 1 else waiters[0].id,
             lines=[(menu_items[25], 2)],
             status=OrderStatus.paid,
         )
         db.add(
             Payment(
                 order_id=paid.id,
+                waiter_id=paid.waiter_id,
                 amount=paid.total,
+                tip_amount=Decimal("8000.00"),
+                received_amount=paid.total + Decimal("8000.00"),
+                change_amount=Decimal("0.00"),
                 payment_method=PaymentMethod.credit_card,
                 status=PaymentStatus.paid,
                 paid_at=datetime.now(timezone.utc),

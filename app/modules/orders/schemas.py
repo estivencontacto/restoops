@@ -26,6 +26,7 @@ class OrderCreate(BaseModel):
     table_id: int
     reservation_id: int | None = None
     customer_id: int | None = None
+    waiter_id: int | None = None
     items: list[OrderItemCreate] = Field(min_length=1)
 
 
@@ -44,6 +45,7 @@ class OrderRead(BaseModel):
     table_id: int
     reservation_id: int | None
     customer_id: int | None
+    waiter_id: int | None
     status: OrderStatus
     subtotal: Decimal
     tax: Decimal

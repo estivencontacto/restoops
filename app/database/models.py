@@ -189,6 +189,7 @@ class Order(Base, TimestampMixin):
     table_id: Mapped[int] = mapped_column(ForeignKey("restaurant_tables.id"), index=True)
     reservation_id: Mapped[int | None] = mapped_column(ForeignKey("reservations.id"), nullable=True)
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True)
+    waiter_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus, native_enum=False), default=OrderStatus.pending)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"))
     tax: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"))
@@ -198,6 +199,7 @@ class Order(Base, TimestampMixin):
     table: Mapped["RestaurantTable"] = relationship(back_populates="orders")
     reservation: Mapped["Reservation | None"] = relationship(back_populates="orders")
     customer: Mapped["Customer | None"] = relationship(back_populates="orders")
+    waiter: Mapped["User | None"] = relationship()
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order", cascade="all, delete-orphan")
     payment: Mapped["Payment | None"] = relationship(back_populates="order", uselist=False)
 
@@ -221,13 +223,18 @@ class Payment(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"), unique=True, index=True)
+    waiter_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    tip_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"))
+    received_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"))
+    change_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"))
     payment_method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod, native_enum=False))
     status: Mapped[PaymentStatus] = mapped_column(Enum(PaymentStatus, native_enum=False), default=PaymentStatus.pending)
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     order: Mapped["Order"] = relationship(back_populates="payment")
+    waiter: Mapped["User | None"] = relationship()
 
 
 class Notification(Base):
