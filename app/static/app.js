@@ -530,8 +530,8 @@ function renderPOS() {
             </label>
           </div>
           <div class="cash-summary">
-            <div><span>A cobrar</span><strong>${money(cashier.totalToCollect)}</strong></div>
-            <div><span>Cambio</span><strong>${money(cashier.change)}</strong></div>
+            <div><span>A cobrar</span><strong id="cashTotalToCollect">${money(cashier.totalToCollect)}</strong></div>
+            <div><span>Cambio</span><strong id="cashChange">${money(cashier.change)}</strong></div>
           </div>
         </section>
 
@@ -557,12 +557,22 @@ function renderPOS() {
   });
   document.getElementById("posTipAmount")?.addEventListener("input", (event) => {
     state.pos.tipAmount = Number(event.target.value || 0);
-    renderPOS();
+    updateCashSummary();
   });
   document.getElementById("posReceivedAmount")?.addEventListener("input", (event) => {
     state.pos.receivedAmount = Number(event.target.value || 0);
-    renderPOS();
+    updateCashSummary();
   });
+}
+
+function updateCashSummary() {
+  const activeOrder = getActiveOrderForTable(state.pos.selectedTableId);
+  if (!activeOrder) return;
+  const cashier = calculateCashier(activeOrder);
+  const totalElement = document.getElementById("cashTotalToCollect");
+  const changeElement = document.getElementById("cashChange");
+  if (totalElement) totalElement.textContent = money(cashier.totalToCollect);
+  if (changeElement) changeElement.textContent = money(cashier.change);
 }
 
 function floorFeature(title, subtitle, className) {
